@@ -42,6 +42,7 @@ app.post('/fetch-website', async (req, res) => {
 
     const summary = completion.data.choices[0].text.trim();
 
+    // Return the summary in the response
     res.json({ summary });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch the website content or generate summary' });
