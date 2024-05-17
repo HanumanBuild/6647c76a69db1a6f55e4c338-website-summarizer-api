@@ -1,8 +1,14 @@
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { Configuration, OpenAIApi } = require('openai');
 const app = express();
 const port = 3000;
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 app.use(express.json());
 
@@ -27,9 +33,18 @@ app.post('/fetch-website', async (req, res) => {
     // Extract the main text from the HTML
     const mainText = $('body').text().replace(/\s+/g, ' ').trim();
 
-    res.json({ text: mainText });
+    // Send the extracted text to the OpenAI API to generate a summary
+    const completion = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `Summarize the following text:\n\n${mainText}`,
+      max_tokens: 150,
+    });
+
+    const summary = completion.data.choices[0].text.trim();
+
+    res.json({ summary });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch the website content' });
+    res.status(500).json({ error: 'Failed to fetch the website content or generate summary' });
   }
 });
 
