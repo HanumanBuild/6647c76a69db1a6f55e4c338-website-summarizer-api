@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const cheerio = require('cheerio');
 const app = express();
 const port = 3000;
 
@@ -19,7 +20,14 @@ app.post('/fetch-website', async (req, res) => {
   try {
     const response = await axios.get(url);
     const htmlContent = response.data;
-    res.json({ html: htmlContent });
+
+    // Load the HTML content into Cheerio
+    const $ = cheerio.load(htmlContent);
+
+    // Extract the main text from the HTML
+    const mainText = $('body').text().replace(/\s+/g, ' ').trim();
+
+    res.json({ text: mainText });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch the website content' });
   }
